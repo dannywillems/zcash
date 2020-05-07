@@ -445,6 +445,10 @@ uint32_t CCoinsViewCache::PreloadHistoryTree(uint32_t epochId, bool extra, std::
     return total_peaks;
 }
 
+bool CCoinsViewCache::HistoryCacheExists(uint32_t epochId) const {
+    return historyCacheMap.count(epochId) != 0;
+}
+
 HistoryCache& CCoinsViewCache::SelectHistoryCache(uint32_t epochId) const {
     auto entry = historyCacheMap.find(epochId);
 
@@ -501,6 +505,10 @@ void CCoinsViewCache::PushHistoryNode(uint32_t epochId, const HistoryNode node) 
 }
 
 void CCoinsViewCache::PopHistoryNode(uint32_t epochId) {
+    if (!HistoryCacheExists(epochId)) {
+        return;
+    }
+
     HistoryCache& historyCache = SelectHistoryCache(epochId);
     uint256 newRoot;
 
