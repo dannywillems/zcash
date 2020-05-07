@@ -618,6 +618,9 @@ private:
     //! Returns number of peaks, not total number of loaded nodes.
     uint32_t PreloadHistoryTree(uint32_t epochId, bool extra, std::vector<HistoryEntry> &entries, std::vector<uint32_t> &entry_indices);
 
+    //! Returns true if a history cache exists for the specified epoch.
+    bool HistoryCacheExists(uint32_t epochId) const;
+
     //! Selects history cache for specified epoch.
     HistoryCache& SelectHistoryCache(uint32_t epochId) const;
 };

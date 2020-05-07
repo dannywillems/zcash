@@ -2435,9 +2435,7 @@ static DisconnectResult DisconnectBlock(const CBlock& block, CValidationState& s
 
     auto consensusBranchId = CurrentEpochBranchId(pindex->nHeight, chainparams.GetConsensus());
 
-    if (chainparams.GetConsensus().NetworkUpgradeActive(pindex->nHeight, Consensus::UPGRADE_HEARTWOOD)) {
-        view.PopHistoryNode(consensusBranchId);
-    }
+    view.PopHistoryNode(consensusBranchId);
 
     // move best block pointer to prevout block
     view.SetBestBlock(pindex->pprev->GetBlockHash());
