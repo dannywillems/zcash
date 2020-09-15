@@ -1,0 +1,36 @@
+stages:
+  - publish
+
+npm-bundler-publish:
+  image: 'rust:1.46.0'
+  stage: publish
+  before_script:
+    - apt-get update -y
+    - apt-get install jq -y
+    - rustc --version
+    - cargo --version
+    # wasm-pack
+    - curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+    - rustup target install wasm32-unknown-unknown
+    # Install NVM to publish the package
+    - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
+    - export NVM_DIR="$HOME/.nvm"
+    - . "$NVM_DIR/nvm.sh"
+    - nvm install 12.16.1
+    - nvm use 12.16.1
+  script:
+    # Build with wasm-bindgen
+    - wasm-pack build --out-dir npm-bundler --target bundler --scope dannywillems --release -- --features="wasm"
+    - cd npm-bundler
+    - echo "//gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${NPM_TOKEN}" > .npmrc
+    - echo "//gitlab.com/api/v4/packages/npm/:_authToken=${NPM_TOKEN}" >> .npmrc
+    - echo "@dannywillems:registry=https://gitlab.com/api/v4/packages/npm/" >> .npmrc
+    - echo -e "\nexport { wasm };" >> rustzcash.js
+    - >
+        jq --arg id "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/packages/npm/" '. + {"publishConfig": {"@dannywillems:registry": $id}}' < package.json > package.json.new
+    - mv package.json.new package.json
+    - >
+      jq '.files += ["rustzcash_bg.js"]' < package.json > package.json.new
+    - mv package.json.new package.json
+    - cat package.json
+    - npm publish
